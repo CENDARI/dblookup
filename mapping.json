@@ -1,0 +1,31 @@
+{
+    "entity" : {
+	"_id" : {
+            "path" : "url"
+        },
+        "properties" : {
+	    "uri" : {
+		"type" : "string",
+		"index" : "not_analyzed"
+	    },
+            "label" : {
+		"type" : "string"
+	    },
+	    "abstract" : {
+		"type" : "string"
+	    },
+	    "fetched" : {"type" : "date"},
+	    "class" : {
+		"type" : "string"
+	    },
+	    "location" : {
+		"type" : "geo_point",
+		"geohash" : true,
+		"fielddata" : {
+		    "format" : "compressed",
+		    "precision" : "3m"
+		}
+	    }
+        }
+    }
+}

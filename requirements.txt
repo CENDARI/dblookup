@@ -1,0 +1,3 @@
+pyelasticsearch==1.2
+rdflib==4.2.0
+bz2file==0.98
