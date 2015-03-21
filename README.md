@@ -1,5 +1,7 @@
 This python project allows to build an index entry in ElasticSearch containing all the entities useful somewhow to the Cendari project.
 
+dbpedia has no decent web service for autocomplete so entering the data in a local elasticsearch database allows to easily autocomplete with all the information required locally.
+
 ## Installation
 
 Python 2.7 is required, as well as bzip2 and wget. From python, pip needs to be installed, as well as Fabric and virtualenv.
