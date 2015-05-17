@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from pyelasticsearch import ElasticSearch
 from rdflib.graph import Graph, URIRef
 from rdflib.namespace import Namespace, NamespaceManager, RDF, RDFS, OWL
@@ -54,20 +54,23 @@ entries = {}
 redirects = set()
 
 interesting = {
-    'http://schema.org/Event': 'EVT',
-    'http://schema.org/Organization': 'ORG',
-    'http://schema.org/Person': 'PER',
-    'http://schema.org/CreativeWork': 'PUB',
-    'http://schema.org/Place': 'PLA'
+    'http://schema.org/Event': 'event',
+    'http://schema.org/Organization': 'org',
+    'http://schema.org/Person': 'person',
+    'http://schema.org/CreativeWork': 'ref',
+    'http://schema.org/Place': 'place'
 }
-
 
 def get_entry(url):
     url = unicode(url)
     if url in entries:
         entry = entries[url]
     else:
-        entry = { 'uri': url, 'fetched': NOW }
+        entry = {
+            'uri': url,
+            'fetched': NOW,
+            'application': 'dbpedia',
+            'language': 'en'}
         entries[url] = entry
     return entry
 
@@ -160,7 +163,7 @@ def populate():
                     if s in entries:
                         o = unicode(o)
                         entry = entries[s]
-                        add_to_entry(entry, 'label', o)
+                        add_to_entry(entry, 'title', o)
                         update()
             except:
                 exctype, value = sys.exc_info()[:2] 
@@ -179,7 +182,7 @@ def populate():
                     s = unicode(s)
                     if s in entries:
                         entry = entries[s]
-                        entry['abstract'] = unicode(o)
+                        entry['text'] = unicode(o)
                         update()
             except:
                 exctype, value = sys.exc_info()[:2] 
@@ -191,16 +194,26 @@ def populate():
     su = updates
 
 populate()
-print 'Done'
+print 'Saving...'
 
 es = ElasticSearch('http://localhost:9200/')
 
+
 def entries_iterator():
     for url, e in entries.iteritems():
-        if not url in redirects:
+        if not url in redirects and 'title' in e:
+            if 'class' in e:
+                v = e['class']
+                if not isinstance(v, list):
+                    v = [v]
+                for c in v:
+                    if c in interesting:
+                        facet = interesting[c]
+                        e[facet] = e['title']
             yield es.index_op(e, id=url)
 
 with BZ2File(dumpfilename, 'wb') as out:
     for e in entries_iterator():
         out.write(e)
         out.write('\n')
+print 'Done.'

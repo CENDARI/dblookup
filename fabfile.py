@@ -56,6 +56,7 @@ def make_virtual_env():
         local('virtualenv .')
         local('./bin/pip install -r requirements.txt')
 
+@task
 def create_index():
     "Compute a large index containing the dbpedia entries ready to send to ElasticSearch"
     with lcd(PROJ_ROOT):
