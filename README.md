@@ -16,7 +16,7 @@ To download all the dbpedia dump files, type:
    fab download_dbpedia
    ```
 
-This should take time (one hour on a good network) and space (1.5Gb).
+This might take time (one hour on a home network) and space (1Gb).
 
 To compute the index file, type:
    ```
@@ -24,7 +24,12 @@ To compute the index file, type:
    ```
 It should create a large compressed file called `dbpedia-<date>.json.bz2` in around one hour depending on your machine.
 
-To send it to elasticsearch, use the shell script:
+To create the index in elasticsearch, run
+   ```
+  ./create_index.sh 
+   ```
+
+To send the prepared data to elasticsearch, use the shell script:
    ```
    ./big_bulk_index.sh dbpedia-<date>.json.bz2
    ```
