@@ -58,6 +58,13 @@
 	    "class" : {
 		"type" : "string",
                 "index" : "not_analyzed"
+	    },
+            "project" : {
+                "type" : "string",
+                "index" : "not_analyzed"
+            },
+	    "pageviews" : {
+		"type" : "integer"
 	    }
         }
     }

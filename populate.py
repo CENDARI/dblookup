@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 from pyelasticsearch import ElasticSearch
-from rdflib.graph import Graph, URIRef
-from rdflib.namespace import Namespace, NamespaceManager, RDF, RDFS, OWL
+from rdflib.graph import Graph, URIRef, Literal
+from rdflib.namespace import Namespace, NamespaceManager, RDF, RDFS, OWL, XSD
 from rdflib.plugins.parsers.nt import *
 from rdflib.plugins.parsers.ntriples import NTriplesParser, ParseError, r_wspace, r_wspaces, r_tail
 import json
 from bz2file import BZ2File
+import csv
 import pprint
 import datetime
-import sys
-import cPickle as pickle
+import sys, os
+
 
 DEBUG = False
 
@@ -23,6 +24,8 @@ LABEL =   URIRef('http://www.w3.org/2000/01/rdf-schema#label')
 COMMENT = URIRef('http://www.w3.org/2000/01/rdf-schema#comment')
 
 NOW = datetime.datetime.now()
+TODAY = datetime.date.today()
+ORIGIN = datetime.date(1, 1, 1)
 timestamp = NOW.strftime('%Y-%m-%dT%H-%M-%S')
 dumpfilename = 'dbpedia-%s.json.bz2' % timestamp
 
@@ -70,6 +73,7 @@ def get_entry(url):
             'uri': url,
             'fetched': NOW,
             'application': 'dbpedia',
+            'project': 'dbpedia',
             'language': 'en'}
         entries[url] = entry
     return entry
@@ -77,10 +81,11 @@ def get_entry(url):
 def add_to_entry(entry, key, value):
     if key in entry:
         v = entry[key]
-        if isinstance(v, list):
-            v.append(value)
+        if isinstance(v, set):
+            v.add(value)
         else:
-            entry[key] = [v, value]
+            if value != v:
+                entry[key] = set([v, value])
     else:
         entry[key] = value
 
@@ -107,7 +112,7 @@ def populate():
                         add_to_entry(entry, 'class', o)
                         update()
             except:
-                exctype, value = sys.exc_info()[:2] 
+                exctype, value = sys.exc_info()[:2]
                 print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
             if DEBUG and updates >= DEBUG: break
 
@@ -127,7 +132,7 @@ def populate():
                         redirects.add(s)
                         update()
             except:
-                exctype, value = sys.exc_info()[:2] 
+                exctype, value = sys.exc_info()[:2]
                 print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
             if DEBUG and updates >= DEBUG: break
 
@@ -146,7 +151,7 @@ def populate():
                     entry['location'] = unicode(o).replace(' ', ',')
                     update()
             except:
-                exctype, value = sys.exc_info()[:2] 
+                exctype, value = sys.exc_info()[:2]
                 print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
             if DEBUG and (updates-su) >= DEBUG: break
 
@@ -166,7 +171,7 @@ def populate():
                         add_to_entry(entry, 'title', o)
                         update()
             except:
-                exctype, value = sys.exc_info()[:2] 
+                exctype, value = sys.exc_info()[:2]
                 print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
             if DEBUG and (updates-su) >= DEBUG: break
 
@@ -185,10 +190,55 @@ def populate():
                         entry['text'] = unicode(o)
                         update()
             except:
-                exctype, value = sys.exc_info()[:2] 
+                exctype, value = sys.exc_info()[:2]
                 print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
 
             if DEBUG and (updates-su) >= DEBUG: break
+
+    print 'Updated %d records' % (updates - su)
+    su = updates
+
+    if os.path.exists('dbpedia/raw_infobox_properties_en.nt.bz2'):
+        print 'Loading infobox properties'
+        with BZ2File('dbpedia/raw_infobox_properties_en.nt.bz2') as f:
+            for line in f:
+                try:
+                    s, p, o = parser.parseline(line)
+                    #TODO check well-known date properties?
+                    if isinstance(o, Literal) and o.datatype==XSD.date:
+                        s = unicode(s)
+                        if s in entries:
+                            o = o.toPython()
+                            if isinstance(o, date) and o <= TODAY: # and o >= ORIGIN:
+                                entry = entries[s]
+                                add_to_entry(entry, 'date', o)
+                                update()
+                except:
+                    exctype, value = sys.exc_info()[:2]
+                    print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
+
+                if DEBUG and (updates-su) >= DEBUG: break
+
+    print 'Updated %d records' % (updates - su)
+    su = updates
+
+    if os.path.exists('dbpedia/wikistats-2015-enf.csv.bz2'):
+        print 'Loading wikipedia log stats'
+        with BZ2File('dbpedia/wikistats-2015-enf.csv.bz2') as f:
+            reader = csv.reader(f)
+            for row in reader:
+                try:
+                    (lang, name, year, _, count) = row
+                    s = 'http://dbpedia.org/resource/'+name
+                    if s in entries:
+                        entry = entries[s]
+                        entry['pageviews'] = count
+                        update()
+                except:
+                    exctype, value = sys.exc_info()[:2]
+                    print >>sys.stderr, 'Exception: %s(%s)' % (exctype,value)
+
+                if DEBUG and (updates-su) >= DEBUG: break
 
     print 'Updated %d records' % (updates - su)
     su = updates
@@ -204,7 +254,7 @@ def entries_iterator():
         if not url in redirects and 'title' in e:
             if 'class' in e:
                 v = e['class']
-                if not isinstance(v, list):
+                if not isinstance(v, set):
                     v = [v]
                 for c in v:
                     if c in interesting:

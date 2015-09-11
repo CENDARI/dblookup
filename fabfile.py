@@ -38,17 +38,20 @@ def download_dbpedia():
     "Download files from dbpedia"
     with lcd(PROJ_ROOT):
         local('if [ ! -d dbpedia ]; then mkdir dbpedia; fi')
-        server = 'http://data.dws.informatik.uni-mannheim.de/dbpedia/2014/en/'
+        server = 'http://downloads.dbpedia.org/3.9/en/'
+        #server = 'http://data.dws.informatik.uni-mannheim.de/dbpedia/2014/en/'
         files = [
             'instance_types_en.nt.bz2',
             'labels_en.nt.bz2',
             'redirects_en.nt.bz2',
             'short_abstracts_en.nt.bz2',
-            'geo_coordinates_en.nt.bz2'
+            'geo_coordinates_en.nt.bz2',
+            'raw_infobox_properties_en.nt.bz2'
         ]
         with lcd('./dbpedia'):
             for file in files:
                 local('wget -N "%s/%s"; fi' % (server, file))
+            local('wget -N http://wikistats.ins.cwi.nl/data/wikistats-2015-enf.csv.bz2')
 
 def make_virtual_env():
     "Make a virtual environment for local dev use"
