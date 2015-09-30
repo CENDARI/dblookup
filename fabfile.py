@@ -37,18 +37,19 @@ def setup():
 def download_dbpedia():
     "Download files from dbpedia"
     with lcd(PROJ_ROOT):
-        local('if [ ! -d dbpedia ]; then mkdir dbpedia; fi')
-        server = 'http://downloads.dbpedia.org/3.9/en/'
+        local('if [ ! -d dbpedia-2015 ]; then mkdir dbpedia-2015; fi')
+        server = 'http://downloads.dbpedia.org/2015-04/core'
         #server = 'http://data.dws.informatik.uni-mannheim.de/dbpedia/2014/en/'
         files = [
-            'instance_types_en.nt.bz2',
+            'dbpedia_2015-04.nt.bz2',
+            'instance-types_en.nt.bz2',
             'labels_en.nt.bz2',
-            'redirects_en.nt.bz2',
-            'short_abstracts_en.nt.bz2',
-            'geo_coordinates_en.nt.bz2',
-            'raw_infobox_properties_en.nt.bz2'
+            'transitive-redirects_en.nt.bz2',
+            'short-abstracts_en.nt.bz2',
+            'geo-coordinates_en.nt.bz2',
+            'infobox-properties_en.nt.bz2'
         ]
-        with lcd('./dbpedia'):
+        with lcd('./dbpedia-2015'):
             for file in files:
                 local('wget -N "%s/%s"; fi' % (server, file))
             local('wget -N http://wikistats.ins.cwi.nl/data/wikistats-2015-enf.csv.bz2')
