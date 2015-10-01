@@ -108,13 +108,13 @@ def associate_geo(entry, values, id):
         lat = values.get(GEO['lat'])
         lon = values.get(GEO['long'])
         if lat and lon:
-            loc = str(lat)+" "+str(lon)
+            loc = unicode(lat)+" "+unicode(lon)
             break
 
         lat = values.get(DBPPROP['latitude'])
         lon = values.get(DBPPROP['longitude'])
         if lat and lon:
-            loc = str(lat)+" "+str(lon)
+            loc = unicode(lat)+" "+unicode(lon)
             break
 
         lat = values.get(DBPPROP['latd'])
@@ -126,7 +126,6 @@ def associate_geo(entry, values, id):
             lat = float(lat) + float(latmin)/60.0
             lon = float(lon) + float(lonmin)/60.0
             loc = "%f %f" % (lat, lon)
-            loc = str(lat)+" "+str(lon)
             break
 
         lat = values.get(DBPPROP['latDeg'])
@@ -147,7 +146,7 @@ def associate_geo(entry, values, id):
         else:
             entry['class'] = 'http://schema.org/Place'
         entry['location'] = loc.replace(' ', ',')
-        print 'Found loc for %s: %s' % (id, loc)
+        #print 'Found loc for %s: %s' % (id, loc)
     update(len(values))
 
 
