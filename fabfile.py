@@ -38,16 +38,16 @@ def download_dbpedia():
     "Download files from dbpedia"
     with lcd(PROJ_ROOT):
         local('if [ ! -d dbpedia-2015 ]; then mkdir dbpedia-2015; fi')
-        server = 'http://downloads.dbpedia.org/2015-04/core'
+        server = 'http://downloads.dbpedia.org/2015-04'
         #server = 'http://data.dws.informatik.uni-mannheim.de/dbpedia/2014/en/'
         files = [
             'dbpedia_2015-04.nt.bz2',
-            'instance-types_en.nt.bz2',
-            'labels_en.nt.bz2',
-            'transitive-redirects_en.nt.bz2',
-            'short-abstracts_en.nt.bz2',
-            'geo-coordinates_en.nt.bz2',
-            'infobox-properties_en.nt.bz2'
+            'core/instance-types_en.nt.bz2',
+            'core/labels_en.nt.bz2',
+            'core/transitive-redirects_en.nt.bz2',
+            'core/short-abstracts_en.nt.bz2',
+            'core/geo-coordinates_en.nt.bz2',
+            'core/infobox-properties_en.nt.bz2'
         ]
         with lcd('./dbpedia-2015'):
             for file in files:
